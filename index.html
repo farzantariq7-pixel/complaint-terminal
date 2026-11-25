@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Complaint Intake</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; width: 100%;
+    background: #ffffff; color: #111111;
+    font-family: "Courier New", Courier, monospace;
+    overflow: hidden;
+    -webkit-text-size-adjust: 100%;
+  }
+  .screen {
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 30px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen.active { display: flex; }
+  .heading {
+    font-size: 36px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    margin-bottom: 24px; text-align: center;
+  }
+  textarea {
+    width: 100%; max-width: 680px; height: 220px;
+    padding: 16px 18px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 18px; line-height: 1.5;
+    color: #111111; background: #ffffff;
+    border: 2px solid #111111; border-radius: 0;
+    outline: none; resize: none;
+    -webkit-appearance: none; appearance: none; display: block;
+  }
+  .field-group {
+    width: 100%; max-width: 680px;
+    display: flex; flex-direction: column;
+    gap: 20px; margin-bottom: 24px;
+  }
+  .field-box { border: 2px solid #111111; padding: 18px 20px; }
+  .field-box label {
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    display: block; margin-bottom: 10px;
+  }
+  .field-box input {
+    width: 100%; border: none;
+    border-bottom: 1px solid rgba(0,0,0,0.3);
+    padding: 8px 0;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 18px; color: #111111; background: transparent;
+    -webkit-appearance: none; appearance: none;
+    border-radius: 0; outline: none; display: block;
+  }
+  .btn {
+    display: block; width: 100%; max-width: 680px;
+    margin-top: 20px; padding: 20px 52px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 18px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: #ffffff; background: #111111;
+    border: 2px solid #111111; border-radius: 0;
+    cursor: pointer; -webkit-appearance: none; appearance: none;
+    min-height: 64px; text-align: center;
+  }
+  .skip-link {
+    display: block; margin-top: 20px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase;
+    opacity: 0.4; cursor: pointer; text-decoration: underline;
+    min-height: 44px; line-height: 44px; text-align: center;
+  }
+  #seatNotice {
+    position: fixed; top: 40px; left: 0; right: 0;
+    text-align: center; font-size: 18px;
+    letter-spacing: 0.08em; text-transform: uppercase; padding: 0 30px;
+  }
+  #statusBox {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 340px; padding: 40px 48px;
+    border: 2px solid #111111; background: #ffffff;
+    text-align: center; opacity: 0;
+    transition: opacity 400ms ease;
+  }
+  #statusBox.show { opacity: 1; }
+  #statusLabel {
+    font-size: 22px; letter-spacing: 0.2em;
+    text-transform: uppercase; margin-bottom: 18px; color: #111111;
+  }
+  #statusWord { font-size: 48px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+  #statusBox.color-green  { border-color: #2e7d32; }
+  #statusBox.color-green  #statusWord { color: #2e7d32; }
+  #statusBox.color-yellow { border-color: #b8860b; }
+  #statusBox.color-yellow #statusWord { color: #b8860b; }
+  #statusBox.color-red    { border-color: #c62828; }
+  #statusBox.color-red    #statusWord { color: #c62828; }
+</style>
+</head>
+<body>
+
+  <section id="intake" class="screen active">
+    <h1 class="heading">Write your complaint</h1>
+    <textarea id="complaint" autocomplete="off" autocorrect="off"
+      autocapitalize="sentences" spellcheck="false"></textarea>
+    <button class="btn" type="button" onclick="goToContact()">Enter</button>
+  </section>
+
+  <section id="contact" class="screen">
+    <div class="field-group">
+      <div class="field-box">
+        <label for="nameInput">Enter your name</label>
+        <input type="text" id="nameInput" autocomplete="off"
+          autocorrect="off" autocapitalize="words" spellcheck="false" placeholder="Full name">
+      </div>
+      <div class="field-box">
+        <label for="emailInput">Enter your email</label>
+        <input type="email" id="emailInput" autocomplete="off"
+          autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="you@example.com">
+      </div>
+      <div class="field-box">
+        <label for="phoneInput">Enter your phone number</label>
+        <input type="tel" id="phoneInput" autocomplete="off" placeholder="+92 300 0000000">
+      </div>
+    </div>
+    <button class="btn" type="button" onclick="goToProcessing(false)">Submit</button>
+    <span class="skip-link" onclick="goToProcessing(true)">Skip — remain anonymous</span>
+  </section>
+
+  <section id="processing" class="screen">
+    <div id="seatNotice">Please wait for a minute for your complaint to be processed</div>
+    <div id="statusBox">
+      <div id="statusLabel">Status</div>
+      <div id="statusWord"></div>
+    </div>
+  </section>
+
+<script>
+  var SECONDS_PER_STATUS = 10;
+  var STATUSES = ["RECEIVED","UNDER REVIEW","VERIFIED","UNDER PROGRESS","REJECTED","RETURNED"];
+  var RESET_DELAY = 6;
+  var REQUIRE_TEXT = true;
+
+  var SHEETS_URL = "https://script.google.com/macros/s/AKfycbx6eQEyhQcEl4CLkqtnMcGT54SVhYZrJveSnjYrYJQYAc5Avj4jnD_UTaoDPCguMCXs/exec";
+  var EMAILJS_PUBLIC_KEY  = "YOUR_EMAILJS_PUBLIC_KEY";
+  var EMAILJS_SERVICE_ID  = "YOUR_EMAILJS_SERVICE_ID";
+  var EMAILJS_TEMPLATE_ID = "YOUR_EMAILJS_TEMPLATE_ID";
+
+  var timers = [];
+  var currentComplaint = '';
+  var currentName  = '';
+  var currentEmail = '';
+  var currentPhone = '';
+
+  function showScreen(id) {
+    document.getElementById('intake').classList.remove('active');
+    document.getElementById('contact').classList.remove('active');
+    document.getElementById('processing').classList.remove('active');
+    document.getElementById(id).classList.add('active');
+  }
+
+  function clearTimers() {
+    for (var i = 0; i < timers.length; i++) clearTimeout(timers[i]);
+    timers = [];
+  }
+
+  function goToContact() {
+    var text = document.getElementById('complaint').value.trim();
+    if (REQUIRE_TEXT && text.length === 0) return;
+    currentComplaint = text;
+    document.getElementById('nameInput').value  = '';
+    document.getElementById('emailInput').value = '';
+    document.getElementById('phoneInput').value = '';
+    showScreen('contact');
+  }
+
+  function goToProcessing(skip) {
+    currentName  = skip ? '' : document.getElementById('nameInput').value.trim();
+    currentEmail = skip ? '' : document.getElementById('emailInput').value.trim();
+    currentPhone = skip ? '' : document.getElementById('phoneInput').value.trim();
+
+    showScreen('processing');
+
+    var box  = document.getElementById('statusBox');
+    var word = document.getElementById('statusWord');
+    box.className = '';
+    word.textContent = '';
+
+    var stepMs   = SECONDS_PER_STATUS * 1000;
+    var colorMap = ['color-green','color-green','color-yellow','color-yellow','color-red','color-red'];
+
+    for (var i = 0; i < STATUSES.length; i++) {
+      (function(index) {
+        timers.push(setTimeout(function() {
+          box.classList.remove('show');
+          timers.push(setTimeout(function() {
+            box.className = colorMap[index];
+            word.textContent = STATUSES[index];
+            box.classList.add('show');
+            if (STATUSES[index] === 'REJECTED' && currentEmail) {
+              sendRejectionEmail(currentEmail, currentName, currentComplaint, currentPhone);
+            }
+          }, index === 0 ? 50 : 420));
+        }, index * stepMs));
+      })(i);
+    }
+
+    timers.push(setTimeout(reset, STATUSES.length * stepMs + RESET_DELAY * 1000));
+
+    /* Log to Sheets after a short delay so it never blocks the UI */
+    setTimeout(function() {
+      logToSheets(currentComplaint, currentName, currentEmail, currentPhone);
+    }, 500);
+  }
+
+  function reset() {
+    clearTimers();
+    document.getElementById('complaint').value = '';
+    currentComplaint = currentName = currentEmail = currentPhone = '';
+    var box = document.getElementById('statusBox');
+    box.className = '';
+    document.getElementById('statusWord').textContent = '';
+    showScreen('intake');
+  }
+
+  function logToSheets(text, name, email, phone) {
+    if (!SHEETS_URL || SHEETS_URL.indexOf('YOUR_') !== -1) return;
+    try {
+      fetch(SHEETS_URL, {
+        method: 'POST', mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          timestamp: new Date().toISOString(),
+          complaint: text, name: name, email: email, phone: phone
+        })
+      }).catch(function() {});
+    } catch(e) {}
+  }
+
+  function loadEmailJS(cb) {
+    if (window.emailjs) { cb(); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
+    s.onload = function() { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); cb(); };
+    s.onerror = function() {};
+    document.head.appendChild(s);
+  }
+
+  function sendRejectionEmail(toEmail, name, complaintText, phone) {
+    if (EMAILJS_PUBLIC_KEY.indexOf('YOUR_') !== -1) return;
+    try {
+      loadEmailJS(function() {
+        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+          to_email:  toEmail,
+          name:      name || 'Complainant',
+          phone:     phone || 'not provided',
+          complaint: complaintText,
+          date:      new Date().toLocaleDateString('en-PK', { dateStyle: 'long' })
+        }).catch(function() {});
+      });
+    } catch(e) {}
+  }
+
+  document.getElementById('complaint').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); goToContact(); }
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') reset();
+  });
+</script>
+</body>
+</html>
